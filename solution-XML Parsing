@@ -1,0 +1,28 @@
+To read/write xml data in spark, we can use xml packages. 
+This package can be added to Spark using the --packages command line option. 
+For example, to include it when starting the pyspark2 shell as below:
+
+pyspark2  --packages com.databricks:spark-xml_2.11:0.6.0
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+'''Query1. Parse XML and convert it into structured data so that processed data can be stored in hdfs/any database'''
+
+from pyspark.sql import SparkSession
+spark = SparkSession.builder.getOrCreate()
+
+xmldata= spark.read.format('com.databricks.spark.xml').options(rowTag='property').load("/user/srikarthik/xmldata/hdfs-default.xml")
+
+# Note:We can use 'xml' instead of 'com.databricks.spark.xml'
+
+''' Query2: From XML data extract name and value tag and store them in comma delimited format '''
+
+
+xmldata.select('name','value').coalesce(1).write.csv("/user/srikarthik/xml_csv")
+
+''' Query3: From XML data extract name and value tag and store them in xml format '''
+
+
+xmldata.select('name','value').coalesce(1).write.format('xml') \
+    .options(rowTag='newname', rootTag='NewProperty') \
+    .save('/user/srikarthik/new_xml')
